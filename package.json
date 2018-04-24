@@ -1,0 +1,20 @@
+{
+  "name": "alexa-skill-workout-planner",
+  "version": "1.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/terrenjpeterson/workout-planner.git"
+  ",
+  "keywords"" [
+    "alexa",
+    "workout"
+  ],
+  "author":"Terren Peterson",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "alexa-sdk": "^1.0.25",
+    "https":"^1.0.0"
+  }
+}
+
