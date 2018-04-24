@@ -42,23 +42,14 @@ const newSessionRequestHandler = function() {
 };
 
 /**
- * Handler for the launch request event.
+ * Handler for the launch request event when no particular intent is invoked.
  */
 const launchRequestHandler = function() {
     console.log("Starting launchRequestHandler");
-    var that = this;
-    clearTopToDoAction(this.event.session, function(status) {
-        if(!status) {
-            var speechOutput = "Alexa List permissions are missing. You can grant permissions within the Alexa app.";
-            var permissions = ["write::alexa:household:list"];
-            that.emit(":tellWithPermissionCard", speechOutput, permissions);
-        } else {
-            const speechWelcomeOutput = "Welcome to workout planner. To begin, please say something like Start Workout.";
-            const repeatWelcomeOutput = "Thank you for using the workout planner skill. To get started with creating your " +
-                "first workout, just say Start Workout, and I will walk you through a series of questions.";
-            that.emit(':ask', speechWelcomeOutput, repeatWelcomeOutput);
-        }
-    });
+    const speechWelcomeOutput = "Welcome to workout planner. To begin, please say something like Start Workout.";
+    const repeatWelcomeOutput = "Thank you for using the workout planner skill. To get started with creating your " +
+        "first workout, just say Start Workout, and I will walk you through a series of questions.";
+    this.emit(':ask', speechWelcomeOutput, repeatWelcomeOutput);
 };
 
 /**
@@ -625,4 +616,3 @@ handlers[LIST_EXERCISES_INTENT] = listExerciseHandler;
 handlers[AMAZON_CANCEL] = amazonCancelHandler;
 handlers[AMAZON_STOP] = amazonStopHandler;
 handlers[AMAZON_HELP] = amazonHelpHandler;
-
