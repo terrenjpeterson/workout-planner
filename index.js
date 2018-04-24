@@ -24,6 +24,14 @@ exports.handler = function(event, context, callback) {
  */
 const newSessionRequestHandler = function() {
     console.log("Starting newSessionRequestHandler");
+    var that = this;
+    clearTopToDoAction(this.event.session, function(status) {
+        if(!status) {
+            var speechOutput = "Alexa List permissions are missing. You can grant permissions within the Alexa app.";
+            var permissions = ["write::alexa:household:list"];
+            that.emit(":tellWithPermissionCard", speechOutput, permissions);
+        }
+    });
     if (this.event.request.type === "IntentRequest") {
         this.emit(this.event.request.intent.name);
     }
@@ -38,10 +46,19 @@ const newSessionRequestHandler = function() {
  */
 const launchRequestHandler = function() {
     console.log("Starting launchRequestHandler");
-    const speechWelcomeOutput = "Welcome to workout planner. To begin, please say something like Start Workout.";
-    const repeatWelcomeOutput = "Thank you for using the workout planner skill. To get started with creating your " +
-        "first workout, just say Start Workout, and I will walk you through a series of questions.";
-    this.emit(':ask', speechWelcomeOutput, repeatWelcomeOutput);
+    var that = this;
+    clearTopToDoAction(this.event.session, function(status) {
+        if(!status) {
+            var speechOutput = "Alexa List permissions are missing. You can grant permissions within the Alexa app.";
+            var permissions = ["write::alexa:household:list"];
+            that.emit(":tellWithPermissionCard", speechOutput, permissions);
+        } else {
+            const speechWelcomeOutput = "Welcome to workout planner. To begin, please say something like Start Workout.";
+            const repeatWelcomeOutput = "Thank you for using the workout planner skill. To get started with creating your " +
+                "first workout, just say Start Workout, and I will walk you through a series of questions.";
+            that.emit(':ask', speechWelcomeOutput, repeatWelcomeOutput);
+        }
+    });
 };
 
 /**
@@ -71,10 +88,12 @@ const unhandledRequestHandler = function() {
  */
 const amazonHelpHandler = function() {
     console.log("Starting amazonHelpHandler");
-    var speechOutput = "You can say top todo or todo list size or cancel top todo.";
-    this.response.speak(speechOutput);
-    this.emit(":responseReady");
-    console.log("Ending amazonHelpHandler");
+    const speechHelpOutput = "This is the Workout Planner skill. The purpose of this skill is to assist in planning " +
+        "your workout. While you can't take Alexa to the gym, you can use it to create a list of exercises that you then " +
+        "track during your exercise routine. Just say, Start Workout to begin.";
+    const repeatHelpOutput = "Get started by saying, Start Workout. Then list out each exercise you plan to do and a custom list " +
+        "will be created for you within the companion app.";
+    this.emit(':ask', speechHelpOutput, repeatHelpOutput);
 };
 
 /**
@@ -97,6 +116,21 @@ const amazonStopHandler = function() {
     this.response.speak(speechOutput);
     this.emit(":responseReady");
     console.log("Ending amazonStopHandler");
+};
+
+/**
+ * This is the handler for listing out all exercises from the custom slot
+ */
+const listExerciseHandler = function() {
+    console.log("List Exercise Handler");
+    var speechOutput = "Here are the exercises currently supported. " +
+        "pushups, situps, twist abs, incline situp, dips. " +
+        "barbell pullover, lat pull down, seated row, shoulder press, barbell row, dumpbell press, bench press, " +
+        "calf raise, leg extension, leg curl, barbell deadlift, barbell squat, dumbell hammer curl, preacher curl, cable pushdown. " +
+        "To add one of these to your workout, just say something like add ten reps of leg curl at 50 pounds.";
+    var repeatOutput = "Ready to add some of these exercises to your workout? Just say something like " +
+        "add ten dips.";
+    this.emit(":ask", speechOutput, repeatOutput);
 };
 
 /**
@@ -568,6 +602,7 @@ const CLEAR_TOP_TODO_INTENT = "ClearTopToDoIntent";
 const DRINK_WATER_INTENT = "addExercise";
 const ADD_WATER_INTENT = "addWater";
 const NEW_LIST_INTENT = "newWorkout";
+const LIST_EXERCISES_INTENT = "listExercises";
 const AMAZON_HELP = "AMAZON.HelpIntent";
 const AMAZON_CANCEL = "AMAZON.CancelIntent";
 const AMAZON_STOP = "AMAZON.StopIntent";
@@ -583,9 +618,9 @@ handlers[UNHANDLED] = unhandledRequestHandler;
 // Intent handlers
 handlers[TOP_TODO_INTENT] = topToDoHandler;
 handlers[CLEAR_TOP_TODO_INTENT] = clearTopToDoHandler;
-//handlers[ADD_WATER_INTENT] = addWaterHandler;
 handlers[DRINK_WATER_INTENT] = addExerciseHandler;
 handlers[NEW_LIST_INTENT] = addListHandler;
+handlers[LIST_EXERCISES_INTENT] = listExerciseHandler;
 
 handlers[AMAZON_CANCEL] = amazonCancelHandler;
 handlers[AMAZON_STOP] = amazonStopHandler;
