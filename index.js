@@ -11,6 +11,9 @@ const api_port = '443';
 
 var Alexa = require('alexa-sdk');
 
+// this is the array of exercises that are used for responses
+const exercises = require("exercises.json");
+
 exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
     alexa.appId = 'amzn1.ask.skill.e9792097-1e57-4e56-b6e2-df5bec537617';
@@ -125,6 +128,95 @@ const listExerciseHandler = function() {
 };
 
 /**
+ * This is the handler for listing out all exercises for a given body part
+ */
+
+const listExerciseForBodyPart = function() {
+    // first check if the dialog is in a state where 
+    if (this.event.request.dialogState === 'COMPLETED') {
+        console.log("List Exercise for Body Part Handler");
+        // this is the part of the message that the NLU has evaluated the slot data
+        const bodyPart = this.event.request.intent.slots.bodyPart.resolutions.resolutionsPerAuthority[0];
+        var speechOutput = "Here are there exercises I have for your ";
+        // check if the body part slot found a match, if so lookup exercises for it
+        console.log(JSON.stringify(bodyPart));
+        if (bodyPart.status.code === 'ER_SUCCESS_MATCH') {
+            speechOutput = speechOutput + this.event.request.intent.slots.bodyPart.value + ". ";
+            var sampleExercise = "bench press";
+            for (var i = 0; i < exercises.length; i++ ) {
+                if (bodyPart.values[0].value.name.toLowerCase() === exercises[i].bodyPart) {
+                    speechOutput = speechOutput + exercises[i].exercise + ", ";
+                    sampleExercise = exercises[i].exercise;
+                }
+            }
+            speechOutput = speechOutput + "If you want a full description of any of these exercises, just say " +
+                "something like, explain " + sampleExercise + ".";
+        } else {
+            speechOutput = "Sorry, I don't have exercises for your " + this.event.request.intent.slots.bodyPart.value + ".";
+        }
+        var repeatOutput = "More info? Here is what is next.";
+        this.emit(":ask", speechOutput, repeatOutput);
+    } else {
+        // this gets invoked when the dialog state is in-progress. delegate back to Alexa to complete data capture
+        console.log("not enough data provided");
+        this.context.succeed({
+            "response": {
+                "directives": [
+                    {
+                        "type": "Dialog.Delegate"
+                    }
+                ],
+                "shouldEndSession": false
+            },
+            "sessionAttributes": {}
+        });
+    }
+};
+
+/**
+ * This is the handler for describing a specific exercise
+ */
+
+const explainExercise = function() {
+    console.log("Explain an exercise");
+    // check if the required information has been provided in the dialog - if so, then proceed.
+    if (this.event.request.dialogState === 'COMPLETED') {
+        var speechOutput = "More details on ";
+        var repeatOutput = "If you would like more details on what exercises are available, just say list exercises.";
+        // this is the part of the message that the NLU has evaluated the slot data
+        const exercise = this.event.request.intent.slots.exercise.resolutions.resolutionsPerAuthority[0];
+        if (exercise.status.code === 'ER_SUCCESS_MATCH') {
+            // find the details on the exercise
+            for (var i = 0; i < exercises.length; i++ ) {
+                if (exercise.values[0].value.name.toLowerCase() === exercises[i].exercise.toLowerCase()) {
+                    speechOutput = exercises[i].description;
+                }
+            }
+            speechOutput = speechOutput + " To add this to your exercise plan, just say something like " +
+                "add 10 reps of " + this.event.request.intent.slots.exercise.value + ".";
+            repeatOutput = "Would you like to add this exercise to your plan? If so, just say something like " +
+                "add 10 reps of " + this.event.request.intent.slots.exercise.value + ".";
+        } else {
+            speechOutput = "Sorry, I don't have information on " + this.event.request.intent.slots.exercise.value + ".";
+        }
+        this.emit(":ask", speechOutput, repeatOutput);
+    } else {
+        console.log("not enough data provided");
+        this.context.succeed({
+            "response": {
+                "directives": [
+                    {
+                        "type": "Dialog.Delegate"
+                    }
+                ],
+                "shouldEndSession": false
+            },
+            "sessionAttributes": {}
+        });
+    }
+};
+
+/**
  * This is the handler for the top to-do intent.
  */
 const topToDoHandler = function() {
@@ -211,8 +303,8 @@ const addExerciseHandler = function() {
                     }
                 ],
                 "shouldEndSession": false
-                },
-                "sessionAttributes": {}
+            },
+            "sessionAttributes": {}
         });
     }
 };
@@ -594,6 +686,8 @@ const DRINK_WATER_INTENT = "addExercise";
 const ADD_WATER_INTENT = "addWater";
 const NEW_LIST_INTENT = "newWorkout";
 const LIST_EXERCISES_INTENT = "listExercises";
+const LIST_EXERCISE_BODY_PART_INTENT = "exerciseBody";
+const EXPLAIN_EXERCISE_INTENT = "explainExercise";
 const AMAZON_HELP = "AMAZON.HelpIntent";
 const AMAZON_CANCEL = "AMAZON.CancelIntent";
 const AMAZON_STOP = "AMAZON.StopIntent";
@@ -612,6 +706,8 @@ handlers[CLEAR_TOP_TODO_INTENT] = clearTopToDoHandler;
 handlers[DRINK_WATER_INTENT] = addExerciseHandler;
 handlers[NEW_LIST_INTENT] = addListHandler;
 handlers[LIST_EXERCISES_INTENT] = listExerciseHandler;
+handlers[LIST_EXERCISE_BODY_PART_INTENT] = listExerciseForBodyPart;
+handlers[EXPLAIN_EXERCISE_INTENT] = explainExercise;
 
 handlers[AMAZON_CANCEL] = amazonCancelHandler;
 handlers[AMAZON_STOP] = amazonStopHandler;
