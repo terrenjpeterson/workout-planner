@@ -34,11 +34,13 @@ Then when a user enables the skill, they will also need to opt-in for the skill 
 
 ## Alexa APIs
 
-There is one main API that manages lists on Alexa, then different operations with it (GET, POST, DELETE) can then create new lists and add items to an existing one. Here is a code sample on how to create a new list. An object that gets passed in provides the name of the new list.  
-
-https://api.alexa.com/v2/householdlists/
+There is one main API that manages lists on Alexa, then different operations with it (GET, POST, DELETE) can then create new lists and add items to an existing one. 
 
 ![](https://s3.amazonaws.com/workoutplannerskill/images/architecture.png)
+
+Here is a code sample on how to create a new list. An object that gets passed in provides the name of the new list.  
+
+https://api.alexa.com/v2/householdlists/
 
 ```sh
     var path = "/v2/householdlists/";
@@ -90,3 +92,5 @@ https://api.alexa.com/v2/householdlists/
     
     req.end(JSON.stringify(postData));
 ```
+
+The response provides the listId that is then needed for adding exercises to it.
