@@ -27,21 +27,15 @@ exports.handler = function(event, context, callback) {
  */
 const newSessionRequestHandler = function() {
     console.log("Starting newSessionRequestHandler");
-    var that = this;
-    clearTopToDoAction(this.event.session, function(status) {
-        if(!status) {
-            var speechOutput = "Alexa List permissions are missing. You can grant permissions within the Alexa app.";
-            var permissions = ["write::alexa:household:list"];
-            that.emit(":tellWithPermissionCard", speechOutput, permissions);
-        }
-    });
-    if (this.event.request.type === "IntentRequest") {
-        this.emit(this.event.request.intent.name);
-    }
-    else {
+    // verify that permissions exist with the start of any new session - error out if not included
+    if(!this.event.session.user.permissions) {
+        var speechOutput = "Alexa List permissions are missing. You can grant permissions within the Alexa app.";
+        var permissions = ["write::alexa:household:list"];
+        this.emit(":tellWithPermissionCard", speechOutput, permissions);
+        console.log("Ending newSessionRequestHandler");
+    } else {
         this.emit(LAUNCH_REQUEST);
     }
-    console.log("Ending newSessionRequestHandler");
 };
 
 /**
@@ -717,4 +711,3 @@ handlers[EXPLAIN_EXERCISE_INTENT] = explainExercise;
 handlers[AMAZON_CANCEL] = amazonCancelHandler;
 handlers[AMAZON_STOP] = amazonStopHandler;
 handlers[AMAZON_HELP] = amazonHelpHandler;
-
