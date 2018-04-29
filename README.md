@@ -16,12 +16,21 @@ I started this using the lists sample in the Alexa cookbook.
 
 ## Supported Exercises
 
-pushups, situps, twist abs, incline situp, dips
+This supports a number of different exercises.
 
+pushups, situps, twist abs, incline situp, dips
 calf raise, leg extension, leg curl, barbell deadlift, barbell squat, dumbell hammer curl, preacher curl, cable pushdown, 
 barbell pullover, lat pull down, seated row, shoulder press, barbell row, dumpbell press, bench press
 
 ## Alexa Permissions
+
+When creating the skill, on the permissions tab, request both "Lists Read" and "Lists Write".
+
+![](https://s3.amazonaws.com/workoutplannerskill/images/skill_permissions.png)
+
+Then when a user enables the skill, they will also need to opt-in for the skill using the companion app to modify the settings.
+
+![](https://s3.amazonaws.com/workoutplannerskill/images/permission_sliders.jpg)
 
 ## Alexa APIs
 
@@ -29,8 +38,10 @@ There is one main API that manages lists on Alexa, then different operations wit
 
 https://api.alexa.com/v2/householdlists/
 
+![](https://s3.amazonaws.com/workoutplannerskill/images/architecture.png)
+
 ```sh
-var path = "/v2/householdlists/";
+    var path = "/v2/householdlists/";
 
     console.log("path:" + path);
 	
